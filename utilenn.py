@@ -34,12 +34,20 @@ class VariableSizeInspector(nn.Module):
         return 'VariableSizeInspector()'
 
 
+toPIL = T.ToPILImage()
+
+
 def tensor_image_to_numpy_image(t):
-    return t.squeeze(0).permute(1, 2, 0).numpy()
+    return toPIL(t.squeeze(0))
+
+
+def to_gray_pil(pil_image):
+    return pil_image.convert('P')
 
 
 numpy_image_to_tensor_image = T.Compose([
     T.ToPILImage(),
-    T.Scale((100, 100), interpolation=Image.CUBIC),
+    T.Scale((128, 128), interpolation=Image.CUBIC),
+    to_gray_pil,
     T.ToTensor(),
 ])

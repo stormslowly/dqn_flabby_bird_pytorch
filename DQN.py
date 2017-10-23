@@ -3,6 +3,7 @@ from torch import functional as F
 from torch.autograd import Variable
 import torch
 
+from Agent import Agent
 from utilenn import VariableSizeInspector, FeatureFlatten
 
 
@@ -34,25 +35,25 @@ class DQN(nn.Module):
         super(DQN, self).__init__()
 
         self.conv1 = nn.Sequential(
-            CNNWithBatchNormalReLU(in_channels=3,
+            CNNWithBatchNormalReLU(in_channels=1,
                                    out_channels=5,
-                                   kernel_size=4,
+                                   kernel_size=2,
                                    bn_num_features=16),
 
             CNNWithBatchNormalReLU(in_channels=5,
                                    out_channels=10,
-                                   kernel_size=6,
+                                   kernel_size=4,
                                    bn_num_features=5),
 
             CNNWithBatchNormalReLU(in_channels=10,
                                    out_channels=3,
-                                   kernel_size=10,
+                                   kernel_size=4,
                                    bn_num_features=5),
-            FeatureFlatten(),
+            FeatureFlatten()
         )
         self.head = nn.Sequential(
-            nn.Linear(147, 100),
-            nn.Linear(100, 50),
+            nn.Linear(588, 200),
+            nn.Linear(200, 50),
             nn.Linear(50, 2)
         )
 
@@ -66,10 +67,12 @@ if __name__ == '__main__':
     # print(net)
     import time
 
-    start = time.time()
+    agent = Agent(net, 2)
 
-    data = net.forward(Variable(torch.rand(2, 3, 100, 100))).data
+    # data = net.forward(Variable(torch.randn(1, 1, 128, 128))).data
 
-    print('the max ', data)
-    print('index', data.max(1)[0])
-    print(time.time() - start)
+    print(agent.select_action((torch.rand(1, 1, 128, 128))))
+
+    # print('the max ', data)
+    # print('index', data.max(1)[1])
+    # print(time.time() - start)

@@ -1,5 +1,6 @@
 import random
 from collections import namedtuple
+import math
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward', 'done'))
@@ -15,6 +16,7 @@ class ReplayMemory(object):
         """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
+
         self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
 

@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+from itertools import count
+
 import gym
 from os import path
 from torch.autograd import Variable
@@ -9,10 +12,11 @@ import numpy as np
 import torch.optim as optim
 import torch.nn.functional as F
 
-import random
-
 from matplotlib import pyplot as plt
+
+from Agent import Agent
 from RelayMemory import ReplayMemory, Transition
+from env import FlappyEnvironment
 
 from utilenn import tensor_image_to_numpy_image, numpy_image_to_tensor_image
 
@@ -22,62 +26,7 @@ EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 200
 
-
-class Agent(object):
-    def __init__(self, model, action_size):
-        self.model = model
-        self.action_size = action_size
-
-    def select_action(self, state, eps_threshold=EPS_END):
-        sample = random.random()
-        if sample > 0.9:
-            return self.model.forward(Variable(state, volatile=True)).data.max(1)[1][0]
-        else:
-            return random.randrange(self.action_size)
-
-
-class Environment(object):
-    def __init__(self, game, action_size):
-        self.game = game
-        self.action_size = action_size
-        self.current_state = None
-
-        self.mem = ReplayMemory(5000)
-
-    def reset(self):
-        self.t = 0
-        self.game.reset()
-        self.current_state = self.get_screen()
-
-    def get_screen(self):
-        return numpy_image_to_tensor_image(self.game.render('rgb_array')).unsqueeze(0)
-
-    def step(self, action):
-        _state, reward, done, _obs = self.game.step(action)
-
-        next_state = self.get_screen()
-
-        if reward > 0:
-            print('nice job', reward)
-
-        reward += self.t
-
-        self.t += 0.01
-        if done:
-            next_state = self.current_state
-
-        self.mem.push(self.current_state, torch.LongTensor([[action]]), next_state, torch.Tensor([reward]), done)
-
-        self.current_state = next_state
-
-        print('good seed ,', reward)
-
-        return done
-
-
-game = gym.make('FlappyBird-v0')
-
-env = Environment(game, 2)
+env = FlappyEnvironment()
 
 model = DQN.DQN()
 
@@ -86,10 +35,7 @@ if path.exists('./dqn.net'):
 
 agent = Agent(model, 2)
 
-game.reset()
-
 plt.figure(1)
-
 env.reset()
 
 print('state_size ', env.current_state.size())
@@ -103,9 +49,9 @@ plt.figure(2)
 plt.plot(total_loss)
 
 
-def optimize_model(memory):
+def _optimize_model(memory):
     if len(memory) < BATCH_SIZE:
-        return
+        return 0
 
     transitions = memory.sample(BATCH_SIZE)
     # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
@@ -135,13 +81,11 @@ def optimize_model(memory):
     # clear it. After this, we'll just end up with a Variable that has
     # requires_grad=False
     # Compute the expected Q values
-    reward_batch.data.clamp_(-1, 1)
+    # reward_batch.data.clamp_(-1, 1)
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
-
-    total_loss.append(loss.data[0])
 
     # Optimize the model
     optimizer.zero_grad()
@@ -150,7 +94,28 @@ def optimize_model(memory):
     #     param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-    # return loss.data[0]
+    return loss.data[0]
+
+
+def optimize_model(memory):
+    if len(memory) < BATCH_SIZE:
+        return 100
+
+    losses = []
+
+    for i in count():
+        loss = _optimize_model(memory)
+        losses.append(loss)
+
+        mean_loss = np.mean(losses)
+        print(i, mean_loss)
+
+        if i > 100:
+            break
+        if i > 10 and mean_loss < 5:
+            break
+
+    return np.mean(losses)
 
 
 for _ in range(100):
@@ -172,11 +137,12 @@ for _ in range(100):
     print('epoch ', _)
 
     BATCH_SIZE = 100
-    for _i in range(10):
-        optimize_model(env.mem)
+
+    total_loss.append(optimize_model(env.mem))
+
+    plt.figure(2)
+    plt.gcf().gca().cla()
+    plt.plot(np.log10(total_loss))
+    plt.pause(0.01)
 
     torch.save(model.state_dict(), './dqn.net')
-
-plt.figure(3)
-plt.plot(np.log10(total_loss))
-plt.show(block=True)
