@@ -19,7 +19,6 @@ class CNNWithBatchNormalReLU(nn.Module):
 
         self.cnn = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size, stride),
-            nn.BatchNorm2d(bn_num_features),
             nn.ReLU()
         )
 
@@ -36,19 +35,25 @@ class DQN(nn.Module):
 
         self.conv1 = nn.Sequential(
             CNNWithBatchNormalReLU(in_channels=3,
-                                   out_channels=16,
+                                   out_channels=5,
+                                   kernel_size=4,
                                    bn_num_features=16),
 
-            CNNWithBatchNormalReLU(in_channels=16,
-                                   out_channels=5,
+            CNNWithBatchNormalReLU(in_channels=5,
+                                   out_channels=10,
+                                   kernel_size=6,
                                    bn_num_features=5),
 
+            CNNWithBatchNormalReLU(in_channels=10,
+                                   out_channels=3,
+                                   kernel_size=10,
+                                   bn_num_features=5),
             FeatureFlatten(),
         )
         self.head = nn.Sequential(
-            nn.Linear(5400, 1024),
-            nn.Linear(1024, 512),
-            nn.Linear(512, 2)
+            nn.Linear(147, 100),
+            nn.Linear(100, 50),
+            nn.Linear(50, 2)
         )
 
     def forward(self, x):
@@ -63,8 +68,8 @@ if __name__ == '__main__':
 
     start = time.time()
 
-    data = net.forward(Variable(torch.rand(1, 3, 192, 108))).data
+    data = net.forward(Variable(torch.rand(2, 3, 100, 100))).data
 
     print('the max ', data)
-    print('index', data.max(1)[1][0])
+    print('index', data.max(1)[0])
     print(time.time() - start)

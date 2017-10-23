@@ -40,6 +40,6 @@ def tensor_image_to_numpy_image(t):
 
 numpy_image_to_tensor_image = T.Compose([
     T.ToPILImage(),
-    T.Scale((108, 192), interpolation=Image.CUBIC),
+    T.Scale((100, 100), interpolation=Image.CUBIC),
     T.ToTensor(),
 ])
