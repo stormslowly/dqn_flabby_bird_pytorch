@@ -1,6 +1,8 @@
 import random
-from collections import namedtuple
+from collections import namedtuple, deque
 import math
+
+import itertools
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward', 'done'))
@@ -9,19 +11,28 @@ Transition = namedtuple('Transition',
 class ReplayMemory(object):
     def __init__(self, capacity):
         self.capacity = capacity
-        self.memory = []
-        self.position = 0
+        self.memory = deque([], capacity)
+        self.good_memory = deque([], capacity)
 
     def push(self, *args):
-        """Saves a transition."""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
 
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
+        transition = Transition(*args)
+
+        if transition.reward[0] > -2:
+            self.good_memory.append(transition)
+        else:
+            self.memory.append(transition)
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+
+        to_get = min(len(self.good_memory), batch_size)
+
+        from_good = random.sample(self.good_memory, to_get)
+        from_normal = random.sample(self.memory, max(batch_size, to_get))
+
+        return random.sample(
+            from_good + from_normal,
+            batch_size)
 
     def __len__(self):
-        return len(self.memory)
+        return len(self.memory) + len(self.good_memory)

@@ -9,7 +9,7 @@ class Agent(object):
 
     def select_action(self, state, eps_threshold=0.05):
         sample = random.random()
-        if sample > 0.8:
+        if sample > eps_threshold:
             return self.model.forward(Variable(state, volatile=True)).data.max(1)[1][0]
         else:
             if random.random() > 0.8:

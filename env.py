@@ -15,7 +15,7 @@ class FlappyEnvironment(object):
         self.game.seed(100)
         self.t = 0
 
-        self.mem = ReplayMemory(10000)
+        self.mem = ReplayMemory(5000)
 
     def reset(self):
         self.t = 0
@@ -34,18 +34,17 @@ class FlappyEnvironment(object):
         if reward > 0:
             print('nice job', reward)
 
-        self.t += 0.01
+        self.t += 0.05
 
         reward += self.t
 
         if done:
+            if self.t < 3:
+                reward -= 2
             next_state = self.current_state
+            print('done with', self.t, reward)
 
         self.current_state = next_state
-
-        if reward <= 0:
-            if random.random() > 0.5:
-                return done
 
         self.mem.push(self.current_state, torch.LongTensor([[action]]), next_state, torch.Tensor([reward]), done)
 

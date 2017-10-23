@@ -11,6 +11,7 @@ import torch
 import numpy as np
 import torch.optim as optim
 import torch.nn.functional as F
+import math
 
 from matplotlib import pyplot as plt
 
@@ -20,8 +21,7 @@ from env import FlappyEnvironment
 
 from utilenn import tensor_image_to_numpy_image, numpy_image_to_tensor_image
 
-BATCH_SIZE = 128
-GAMMA = 0.999
+GAMMA = 0.9
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 200
@@ -110,37 +110,45 @@ def optimize_model(memory):
         mean_loss = np.mean(losses)
         print(i, mean_loss)
 
-        if i > 200:
+        if i >= 100:
             break
-        if i > 100 and mean_loss < 2:
+        if i >= 50 and mean_loss < 0.2:
             break
 
     return np.mean(losses)
 
 
-for _ in range(100):
+current_loss = 2
 
-    env.reset()
+BATCH_SIZE = 200
 
-    while True:
-        action = agent.select_action(env.current_state)
-        done = env.step(action)
+for _ in range(10000):
 
-        if done:
+    for c in count():
+
+        env.reset()
+
+        while True:
+            action = agent.select_action(env.current_state, math.atan(current_loss * 3) / math.pi * 2)
+            done = env.step(action)
+
+            if done:
+                break
+
+            img.set_data(tensor_image_to_numpy_image(env.current_state))
+            plt.figure(1, figsize=(300, 300))
+            plt.draw()
+            plt.pause(0.001)
+
+        if c >= 20:
             break
-
-        img.set_data(tensor_image_to_numpy_image(env.current_state))
-        plt.figure(1)
-        plt.draw()
-        plt.pause(0.01)
 
     print('epoch ', _)
 
-    BATCH_SIZE = 1000
+    current_loss = optimize_model(env.mem)
+    total_loss.append(current_loss)
 
-    total_loss.append(optimize_model(env.mem))
-
-    plt.figure(2)
+    plt.figure(2, figsize=(500, 500))
     plt.gcf().gca().cla()
     plt.plot(np.log10(total_loss))
     plt.pause(0.01)

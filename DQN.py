@@ -20,6 +20,7 @@ class CNNWithBatchNormalReLU(nn.Module):
 
         self.cnn = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size, stride),
+            nn.BatchNorm2d(bn_num_features),
             nn.ReLU()
         )
 
@@ -38,17 +39,17 @@ class DQN(nn.Module):
             CNNWithBatchNormalReLU(in_channels=1,
                                    out_channels=5,
                                    kernel_size=2,
-                                   bn_num_features=16),
+                                   bn_num_features=5),
 
             CNNWithBatchNormalReLU(in_channels=5,
                                    out_channels=10,
                                    kernel_size=4,
-                                   bn_num_features=5),
+                                   bn_num_features=10),
 
             CNNWithBatchNormalReLU(in_channels=10,
                                    out_channels=3,
                                    kernel_size=4,
-                                   bn_num_features=5),
+                                   bn_num_features=3),
             FeatureFlatten()
         )
         self.head = nn.Sequential(
