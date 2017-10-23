@@ -12,6 +12,6 @@ class Agent(object):
         if sample > 0.8:
             return self.model.forward(Variable(state, volatile=True)).data.max(1)[1][0]
         else:
-            if random.random() > 0.5:
+            if random.random() > 0.8:
                 return 0
             return 1

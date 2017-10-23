@@ -110,9 +110,9 @@ def optimize_model(memory):
         mean_loss = np.mean(losses)
         print(i, mean_loss)
 
-        if i > 100:
+        if i > 200:
             break
-        if i > 10 and mean_loss < 5:
+        if i > 100 and mean_loss < 2:
             break
 
     return np.mean(losses)
@@ -136,7 +136,7 @@ for _ in range(100):
 
     print('epoch ', _)
 
-    BATCH_SIZE = 100
+    BATCH_SIZE = 1000
 
     total_loss.append(optimize_model(env.mem))
 

@@ -15,7 +15,7 @@ class FlappyEnvironment(object):
         self.game.seed(100)
         self.t = 0
 
-        self.mem = ReplayMemory(5000)
+        self.mem = ReplayMemory(10000)
 
     def reset(self):
         self.t = 0
@@ -34,7 +34,7 @@ class FlappyEnvironment(object):
         if reward > 0:
             print('nice job', reward)
 
-        self.t += 0.001
+        self.t += 0.01
 
         reward += self.t
 
