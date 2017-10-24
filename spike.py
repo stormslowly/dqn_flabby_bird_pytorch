@@ -110,9 +110,9 @@ def optimize_model(memory):
         mean_loss = np.mean(losses)
         print(i, mean_loss)
 
-        if i >= 100:
+        if i >= 50:
             break
-        if i >= 50 and mean_loss < 0.2:
+        if i >= 20 and mean_loss < 1:
             break
 
     return np.mean(losses)
@@ -132,8 +132,7 @@ for epoch in range(100000):
 
             action = agent.select_action(
                 env.current_state,
-                0
-                # math.atan(current_loss / (epoch + 1)) / math.pi * 2
+                max(0.05, 0.9 - epoch / 1000)
             )
             done = env.step(action)
 

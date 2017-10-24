@@ -30,9 +30,12 @@ class FlappyEnvironment(object):
 
         next_state = self.get_screen()
 
-        if done:
-            next_state = self.current_state
-            print('done with', reward)
+        for _ in range(4):
+            _state, reward, done, _obs = self.game.step(1)  # np tap
+            next_state = self.get_screen()
+            if done:
+                next_state = self.current_state
+                break;
 
         self.current_state = next_state
 

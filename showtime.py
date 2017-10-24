@@ -21,7 +21,7 @@ agent = Agent(model, 2)
 
 env.reset()
 
-plt.figure(1, figsize=(300, 300))
+plt.figure(1, figsize=(3, 3))
 img = plt.imshow(tensor_image_to_numpy_image(env.current_state))
 
 for c in count():
@@ -33,8 +33,6 @@ for c in count():
             -1
         )
         done = env.step(action)
-
-
         img.set_data(tensor_image_to_numpy_image(env.current_state))
         plt.draw()
         plt.pause(0.001)

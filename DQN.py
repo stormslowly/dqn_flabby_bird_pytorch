@@ -58,7 +58,6 @@ class DQN(nn.Module):
             nn.Linear(200, 50),
             nn.ReLU(),
             nn.Linear(50, 2),
-            nn.ReLU()
         )
 
     def forward(self, x):
