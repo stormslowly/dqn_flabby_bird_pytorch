@@ -28,7 +28,11 @@ class ReplayMemory(object):
         to_get = min(len(self.good_memory), batch_size)
 
         from_good = random.sample(self.good_memory, to_get)
-        from_normal = random.sample(self.memory, max(batch_size, to_get))
+
+        if batch_size - to_get == 0:
+            from_normal = random.sample(self.memory, min(len(self.memory), batch_size))
+        else:
+            from_normal = random.sample(self.memory, min(len(self.memory), batch_size - to_get))
 
         return random.sample(
             from_good + from_normal,

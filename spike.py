@@ -118,18 +118,19 @@ def optimize_model(memory):
     return np.mean(losses)
 
 
-current_loss = 2
+current_loss = 1
 
 BATCH_SIZE = 200
 
-for _ in range(10000):
+for epoch in range(100000):
 
     for c in count():
 
         env.reset()
 
         while True:
-            action = agent.select_action(env.current_state, math.atan(current_loss * 3) / math.pi * 2)
+
+            action = agent.select_action(env.current_state, math.atan(current_loss * 3 / (epoch + 1)) / math.pi * 2)
             done = env.step(action)
 
             if done:
@@ -140,10 +141,10 @@ for _ in range(10000):
             plt.draw()
             plt.pause(0.001)
 
-        if c >= 20:
+        if c >= 50:
             break
 
-    print('epoch ', _)
+    print('epoch ', epoch)
 
     current_loss = optimize_model(env.mem)
     total_loss.append(current_loss)
