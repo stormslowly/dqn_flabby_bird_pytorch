@@ -54,8 +54,11 @@ class DQN(nn.Module):
         )
         self.head = nn.Sequential(
             nn.Linear(588, 200),
+            nn.ReLU(),
             nn.Linear(200, 50),
-            nn.Linear(50, 2)
+            nn.ReLU(),
+            nn.Linear(50, 2),
+            nn.ReLU()
         )
 
     def forward(self, x):

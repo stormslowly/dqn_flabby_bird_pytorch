@@ -3,7 +3,6 @@ from utilenn import numpy_image_to_tensor_image, tensor_image_to_numpy_image
 import gym
 import gym_ple
 import torch
-import random
 
 
 class FlappyEnvironment(object):
@@ -15,7 +14,7 @@ class FlappyEnvironment(object):
         self.game.seed(100)
         self.t = 0
 
-        self.mem = ReplayMemory(5000)
+        self.mem = ReplayMemory(10000)
 
     def reset(self):
         self.t = 0
@@ -31,18 +30,9 @@ class FlappyEnvironment(object):
 
         next_state = self.get_screen()
 
-        if reward > 0:
-            print('nice job', reward)
-
-        self.t += 0.05
-
-        reward += self.t
-
         if done:
-            if self.t < 3:
-                reward -= 2
             next_state = self.current_state
-            print('done with', self.t, reward)
+            print('done with', reward)
 
         self.current_state = next_state
 
@@ -55,17 +45,21 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
 
     env = FlappyEnvironment()
-    env.reset()
 
-    print(env.get_screen().size())
-    img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()))
+    for _ in range(100):
+        print(env.game.action_space.sample())
 
-    for i in range(100):
-        if env.step(1):
-            break
-
-        img.set_data(tensor_image_to_numpy_image(env.get_screen()))
-        plt.draw()
-        plt.pause(0.1)
-
-    plt.show(block=True)
+        # env.reset()
+        #
+        # print(env.get_screen().size())
+        # img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()))
+        #
+        # for i in range(100):
+        #     if env.step(1):
+        #         break
+        #
+        #     img.set_data(tensor_image_to_numpy_image(env.get_screen()))
+        #     plt.draw()
+        #     plt.pause(0.1)
+        #
+        # plt.show(block=True)

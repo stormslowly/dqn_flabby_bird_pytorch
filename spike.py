@@ -130,7 +130,11 @@ for epoch in range(100000):
 
         while True:
 
-            action = agent.select_action(env.current_state, math.atan(current_loss * 3 / (epoch + 1)) / math.pi * 2)
+            action = agent.select_action(
+                env.current_state,
+                0
+                # math.atan(current_loss / (epoch + 1)) / math.pi * 2
+            )
             done = env.step(action)
 
             if done:
