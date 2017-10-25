@@ -11,7 +11,9 @@ class Agent(object):
         sample = random.random()
 
         if sample > eps_threshold:
-            return self.model.forward(Variable(state, volatile=True)).data.max(1)[1][0]
+            actions_value = self.model.forward(Variable(state)).data
+
+            return actions_value.max(1)[1][0]
         else:
             if random.random() > 0.5:
                 return 0

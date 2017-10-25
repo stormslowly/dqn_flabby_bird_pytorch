@@ -42,7 +42,7 @@ def tensor_image_to_numpy_image(t):
 
 
 def to_gray_pil(pil_image):
-    return pil_image.convert('P')
+    return pil_image.convert('L')
 
 
 numpy_image_to_tensor_image = T.Compose([

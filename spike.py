@@ -16,15 +16,10 @@ import math
 from matplotlib import pyplot as plt
 
 from Agent import Agent
-from RelayMemory import ReplayMemory, Transition
+from RelayMemory import Transition
 from env import FlappyEnvironment
 
 from utilenn import tensor_image_to_numpy_image, numpy_image_to_tensor_image
-
-GAMMA = 0.9
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 200
 
 env = FlappyEnvironment()
 
@@ -35,18 +30,11 @@ if path.exists('./dqn.net'):
 
 agent = Agent(model, 2)
 
-plt.figure(1)
 env.reset()
 
-print('state_size ', env.current_state.size())
-img = plt.imshow(tensor_image_to_numpy_image(env.current_state))
-
-optimizer = optim.Adam(model.parameters(), lr=0.05)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 total_loss = []
-
-plt.figure(2)
-plt.plot(total_loss)
 
 
 def _optimize_model(memory):
@@ -108,53 +96,68 @@ def optimize_model(memory):
         losses.append(loss)
 
         mean_loss = np.mean(losses)
-        print(i, mean_loss)
 
         if i >= 50:
             break
-        if i >= 20 and mean_loss < 1:
+        if i >= 30 and mean_loss < 1:
             break
+    torch.save(model.state_dict(), './dqn.net')
 
     return np.mean(losses)
 
 
 current_loss = 1
 
-BATCH_SIZE = 200
+initial_epsilon = 1.
+final_epsilon = 0.1
+GAMMA = 0.99
 
-for epoch in range(100000):
+exploration = 500
+mem_size = 5000
+BATCH_SIZE = 128
 
-    for c in count():
+delta = (initial_epsilon - final_epsilon) / exploration
+
+
+def test_result(epoch):
+    best_step = 0
+    for _ in range(3):
 
         env.reset()
-
+        step = 0
         while True:
-
             action = agent.select_action(
                 env.current_state,
-                max(0.05, 0.9 - epoch / 1000)
+                -1
+            )
+            done = env.step(action)
+            step += 1
+
+            if done:
+                break
+        best_step = max(best_step, step)
+
+    print(epoch, 'best step ', best_step)
+
+
+for epoch in range(100):
+
+    epsilon = initial_epsilon
+
+    for c in range(exploration):
+        env.reset()
+
+        epsilon -= delta
+        while True:
+            action = agent.select_action(
+                env.current_state,
+                epsilon
             )
             done = env.step(action)
 
             if done:
                 break
 
-            img.set_data(tensor_image_to_numpy_image(env.current_state))
-            plt.figure(1, figsize=(300, 300))
-            plt.draw()
-            plt.pause(0.001)
+        print('loss', epsilon, optimize_model(env.mem))
 
-        if c >= 50:
-            break
-
-    print('epoch ', epoch)
-
-    current_loss = optimize_model(env.mem)
-    total_loss.append(current_loss)
-
-    plt.figure(2, figsize=(500, 500))
-    plt.gcf().gca().cla()
-    plt.plot(np.log10(total_loss))
-    plt.pause(0.01)
-
-    torch.save(model.state_dict(), './dqn.net')
+        test_result(epoch)

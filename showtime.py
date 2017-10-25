@@ -22,11 +22,14 @@ agent = Agent(model, 2)
 env.reset()
 
 plt.figure(1, figsize=(3, 3))
-img = plt.imshow(tensor_image_to_numpy_image(env.current_state))
+img = plt.imshow(tensor_image_to_numpy_image(env.current_state), cmap='gray')
 
-for c in count():
+bestStep = 0
 
+for c in range(10):
     env.reset()
+    step = 0
+
     while True:
         action = agent.select_action(
             env.current_state,
@@ -35,7 +38,12 @@ for c in count():
         done = env.step(action)
         img.set_data(tensor_image_to_numpy_image(env.current_state))
         plt.draw()
-        plt.pause(0.001)
+        plt.pause(0.01)
 
+        step += 1
         if done:
             break
+
+    bestStep = max(bestStep, step)
+
+print('best step', bestStep)

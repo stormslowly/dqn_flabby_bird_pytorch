@@ -15,28 +15,33 @@ class ReplayMemory(object):
         self.good_memory = deque([], capacity)
 
     def push(self, *args):
-
         transition = Transition(*args)
 
-        if transition.reward[0] > -2:
-            self.good_memory.append(transition)
-        else:
-            self.memory.append(transition)
+        self.memory.append(transition)
+
+        # if transition.reward[0] > -2:
+        #     self.good_memory.append(transition)
+        # else:
+        #     self.memory.append(transition)
 
     def sample(self, batch_size):
-
-        to_get = min(len(self.good_memory), batch_size)
-
-        from_good = random.sample(self.good_memory, to_get)
-
-        if batch_size - to_get == 0:
-            from_normal = random.sample(self.memory, min(len(self.memory), batch_size))
-        else:
-            from_normal = random.sample(self.memory, min(len(self.memory), batch_size - to_get))
-
         return random.sample(
-            from_good + from_normal,
-            batch_size)
+            self.memory,
+            min(batch_size, len(self.memory))
+        )
+
+        # to_get = min(len(self.good_memory), batch_size)
+        #
+        # from_good = random.sample(self.good_memory, to_get)
+        #
+        # if batch_size - to_get == 0:
+        #     from_normal = random.sample(self.memory, min(len(self.memory), batch_size))
+        # else:
+        #     from_normal = random.sample(self.memory, min(len(self.memory), batch_size - to_get))
+        #
+        # return random.sample(
+        #     from_good + from_normal,
+        #     batch_size)
 
     def __len__(self):
-        return len(self.memory) + len(self.good_memory)
+        return len(self.memory)

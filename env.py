@@ -6,7 +6,7 @@ import torch
 
 
 class FlappyEnvironment(object):
-    def __init__(self):
+    def __init__(self, mem_size=5000):
         self.game = gym.make('FlappyBird-v0')
 
         self.action_size = 2
@@ -14,7 +14,7 @@ class FlappyEnvironment(object):
         self.game.seed(100)
         self.t = 0
 
-        self.mem = ReplayMemory(10000)
+        self.mem = ReplayMemory(mem_size)
 
     def reset(self):
         self.t = 0
@@ -31,13 +31,15 @@ class FlappyEnvironment(object):
         next_state = self.get_screen()
 
         for _ in range(4):
-            _state, reward, done, _obs = self.game.step(1)  # np tap
-            next_state = self.get_screen()
             if done:
-                next_state = self.current_state
-                break;
+                break
+            _state, next_reward, done, _obs = self.game.step(1)  # no tap
 
-        self.current_state = next_state
+            if next_reward != 0:
+                reward = next_reward
+
+        print(action, ' =>reward', reward)
+        self.current_state = self.get_screen()
 
         self.mem.push(self.current_state, torch.LongTensor([[action]]), next_state, torch.Tensor([reward]), done)
 
@@ -48,21 +50,23 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
 
     env = FlappyEnvironment()
+    env.reset()
+    img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()))
 
-    for _ in range(100):
-        print(env.game.action_space.sample())
+    for _ in range(4):
+        print(_)
+        img.set_data(tensor_image_to_numpy_image(env.get_screen()))
+        env.step(1)
+        plt.draw()
+        plt.pause(0.1)
 
-        # env.reset()
-        #
-        # print(env.get_screen().size())
-        # img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()))
-        #
-        # for i in range(100):
-        #     if env.step(1):
-        #         break
-        #
-        #     img.set_data(tensor_image_to_numpy_image(env.get_screen()))
-        #     plt.draw()
-        #     plt.pause(0.1)
-        #
-        # plt.show(block=True)
+    plt.show(block=True)
+#
+# print(env.get_screen().size())
+#
+# for i in range(100):
+#     if env.step(1):
+#         break
+#
+
+#
