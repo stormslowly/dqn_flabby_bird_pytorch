@@ -21,7 +21,7 @@ from env import FlappyEnvironment
 
 from utilenn import tensor_image_to_numpy_image, numpy_image_to_tensor_image
 
-env = FlappyEnvironment()
+env = FlappyEnvironment(mem_size=10000)
 
 model = DQN.DQN()
 
@@ -112,9 +112,9 @@ initial_epsilon = 1.
 final_epsilon = 0.1
 GAMMA = 0.99
 
-exploration = 500
+exploration = 200
 mem_size = 5000
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 
 delta = (initial_epsilon - final_epsilon) / exploration
 
@@ -138,7 +138,14 @@ def test_result(epoch):
         best_step = max(best_step, step)
 
     print(epoch, 'best step ', best_step)
+    return best_step
 
+#
+# plt.figure(1)
+# plt.show()
+
+losses = []
+steps = []
 
 for epoch in range(100):
 
@@ -158,6 +165,15 @@ for epoch in range(100):
             if done:
                 break
 
-        print('loss', epsilon, optimize_model(env.mem))
+        loss = optimize_model(env.mem)
+        # losses.append(loss)
+        step = test_result(epoch)
+        # steps.append(step)
 
-        test_result(epoch)
+        # plt.figure(1)
+        # plt.gcf().gca().cla()
+        # plt.plot(losses)
+        # plt.plot(steps)
+        # plt.pause(0.001)
+
+        print('loss', epsilon, loss)

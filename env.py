@@ -38,7 +38,6 @@ class FlappyEnvironment(object):
             if next_reward != 0:
                 reward = next_reward
 
-        print(action, ' =>reward', reward)
         self.current_state = self.get_screen()
 
         self.mem.push(self.current_state, torch.LongTensor([[action]]), next_state, torch.Tensor([reward]), done)
@@ -51,9 +50,9 @@ if __name__ == '__main__':
 
     env = FlappyEnvironment()
     env.reset()
-    img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()))
+    img = plt.imshow(tensor_image_to_numpy_image(env.get_screen()), cmap='gray')
 
-    for _ in range(4):
+    for _ in range(20):
         print(_)
         img.set_data(tensor_image_to_numpy_image(env.get_screen()))
         env.step(1)

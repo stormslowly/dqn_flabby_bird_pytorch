@@ -47,7 +47,7 @@ def to_gray_pil(pil_image):
 
 numpy_image_to_tensor_image = T.Compose([
     T.ToPILImage(),
-    T.Scale((128, 128), interpolation=Image.CUBIC),
+    T.Scale((40, 40),interpolation=Image.HAMMING),
     to_gray_pil,
     T.ToTensor(),
 ])

@@ -20,7 +20,7 @@ class CNNWithBatchNormalReLU(nn.Module):
 
         self.cnn = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size, stride),
-            nn.BatchNorm2d(bn_num_features),
+            # nn.BatchNorm2d(bn_num_features),
             nn.ReLU()
         )
 
@@ -43,19 +43,19 @@ class DQN(nn.Module):
 
             CNNWithBatchNormalReLU(in_channels=5,
                                    out_channels=10,
-                                   kernel_size=4,
+                                   kernel_size=3,
                                    bn_num_features=10),
 
             CNNWithBatchNormalReLU(in_channels=10,
-                                   out_channels=3,
+                                   out_channels=20,
                                    kernel_size=4,
                                    bn_num_features=3),
-            FeatureFlatten()
+            FeatureFlatten(),
         )
         self.head = nn.Sequential(
-            nn.Linear(588, 200),
+            nn.Linear(180, 100),
             nn.ReLU(),
-            nn.Linear(200, 50),
+            nn.Linear(100, 50),
             nn.ReLU(),
             nn.Linear(50, 2),
         )
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     # data = net.forward(Variable(torch.randn(1, 1, 128, 128))).data
 
-    print(agent.select_action((torch.rand(1, 1, 128, 128))))
+    print(agent.select_action((torch.rand(1, 1, 40, 40))))
 
     # print('the max ', data)
     # print('index', data.max(1)[1])
