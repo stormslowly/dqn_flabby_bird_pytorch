@@ -17,6 +17,9 @@ model = DQN.DQN()
 if path.exists('./dqn.net'):
     model.load_state_dict(torch.load('./dqn.net'))
 
+if torch.cuda.is_available():
+    model.cuda()
+
 agent = Agent(model, 2)
 
 env.reset()

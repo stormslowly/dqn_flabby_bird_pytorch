@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torchvision.transforms as T
+import torch
 from PIL import Image
 
 
@@ -38,16 +39,24 @@ toPIL = T.ToPILImage()
 
 
 def tensor_image_to_numpy_image(t):
-    return toPIL(t.squeeze(0))
+    return toPIL(t.cpu().squeeze(0))
 
 
 def to_gray_pil(pil_image):
     return pil_image.convert('L')
 
 
+def tryCuda(tensor):
+    if torch.cuda.is_available():
+        return tensor.cuda()
+    else:
+        return tensor
+
+
 numpy_image_to_tensor_image = T.Compose([
     T.ToPILImage(),
-    T.Scale((40, 40),interpolation=Image.HAMMING),
+    T.Scale((40, 40), interpolation=Image.HAMMING),
     to_gray_pil,
     T.ToTensor(),
+    tryCuda
 ])

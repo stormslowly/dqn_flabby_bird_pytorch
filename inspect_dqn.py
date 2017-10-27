@@ -14,16 +14,19 @@ model = DQN.DQN()
 if path.exists('./dqn.net'):
     model.load_state_dict(torch.load('./dqn.net'))
 
+if torch.cuda.is_available():
+    model.cuda()
+
 env.reset()
 
 state1 = env.get_screen()
 
-action = 1
+action = 0
 env.step(action)
 
 state2 = env.get_screen()
 
-print (state1.size())
+print(state1.size())
 
 print(
     model.forward(torch.autograd.Variable(state1)).data
@@ -36,3 +39,5 @@ r = 0
 Q_s_max = model.forward(Variable(state2)).data.max(1)[0][0]
 
 print('diff', Q_s_max - Q_s_a)
+
+print(torch.cuda.is_available())

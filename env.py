@@ -2,7 +2,8 @@ from RelayMemory import ReplayMemory
 from utilenn import numpy_image_to_tensor_image, tensor_image_to_numpy_image
 import gym
 import gym_ple
-import torch
+
+from OptimizeTensor import OTensor
 
 
 class FlappyEnvironment(object):
@@ -40,7 +41,8 @@ class FlappyEnvironment(object):
 
         self.current_state = self.get_screen()
 
-        self.mem.push(self.current_state, torch.LongTensor([[action]]), next_state, torch.Tensor([reward]), done)
+        self.mem.push(self.current_state, OTensor.LongTensor([[action]]), next_state,
+                      OTensor.FloatTensor([reward]), done)
 
         return done
 

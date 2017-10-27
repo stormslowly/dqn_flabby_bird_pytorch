@@ -12,6 +12,7 @@ import numpy as np
 import torch.optim as optim
 import torch.nn.functional as F
 import math
+from OptimizeTensor import OTensor
 
 from matplotlib import pyplot as plt
 
@@ -19,14 +20,15 @@ from Agent import Agent
 from RelayMemory import Transition
 from env import FlappyEnvironment
 
-from utilenn import tensor_image_to_numpy_image, numpy_image_to_tensor_image
-
 env = FlappyEnvironment(mem_size=10000)
 
 model = DQN.DQN()
 
 if path.exists('./dqn.net'):
     model.load_state_dict(torch.load('./dqn.net'))
+
+if torch.cuda.is_available():
+    model.cuda()
 
 agent = Agent(model, 2)
 
@@ -47,7 +49,7 @@ def _optimize_model(memory):
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
-    non_final_mask = torch.ByteTensor(tuple(map(lambda s: s is not None, batch.next_state)))
+    non_final_mask = OTensor.ByteTensor(tuple(map(lambda s: s is not None, batch.next_state)))
 
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
                                                 if s is not None]),
@@ -55,7 +57,6 @@ def _optimize_model(memory):
     state_batch = Variable(torch.cat(batch.state))
     action_batch = Variable(torch.cat(batch.action))
     reward_batch = Variable(torch.cat(batch.reward))
-
     next_state = Variable(torch.cat(batch.next_state))
 
     state_action_values = model(state_batch).gather(1, action_batch)
@@ -90,10 +91,9 @@ def optimize_model(memory):
         return 100
 
     losses = []
-
     for i in count():
-        loss = _optimize_model(memory)
-        losses.append(loss)
+        _loss = _optimize_model(memory)
+        losses.append(_loss)
 
         mean_loss = np.mean(losses)
 
@@ -113,8 +113,7 @@ final_epsilon = 0.1
 GAMMA = 0.99
 
 exploration = 200
-mem_size = 5000
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 
 delta = (initial_epsilon - final_epsilon) / exploration
 
@@ -139,6 +138,7 @@ def test_result(epoch):
 
     print(epoch, 'best step ', best_step)
     return best_step
+
 
 #
 # plt.figure(1)
@@ -176,4 +176,4 @@ for epoch in range(100):
         # plt.plot(steps)
         # plt.pause(0.001)
 
-        print('loss', epsilon, loss)
+        print('loss', c, loss, epsilon)
